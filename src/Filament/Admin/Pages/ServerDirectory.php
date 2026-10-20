@@ -87,9 +87,11 @@ final class ServerDirectory extends Page implements HasTable, HasForms
                         TextInput::make('bedrock_address')->label('Bedrock join address (optional)')->maxLength(255)
                             ->helperText('Only for servers that accept Bedrock players. Format: host:19132. Adds an Open in Minecraft button. Java modpacks use the client download and join instructions instead.'),
                         TextInput::make('published_address')->label('Join address')->maxLength(255)
-                            ->helperText('Shown and copied on the website. Test mode can fall back to the allocation; production requires an explicit address.'),
-                        TextInput::make('requested_subdomain')->label('Subdomain requested in SSC')->disabled()->dehydrated(false)
-                            ->helperText('A request only. DNS is not created or verified; use a working join address above.'),
+                            ->helperText('Shown and copied on the website. Empty uses the connected subdomain; test mode can also fall back to the allocation.'),
+                        TextInput::make('requested_subdomain')->label('Subdomain')->disabled()->dehydrated(false)
+                            ->helperText(fn (Server $record) => DirectoryStore::metadata($record)['subdomain_address'] !== ''
+                                ? 'Connected by PelicanSimplify. Used as the join address while the field above is empty.'
+                                : 'Set by the server owner in PelicanSimplify (Network). Automatic subdomains connect it in Cloudflare.'),
                         TextInput::make('sort_order')->label('Display order')->integer()->minValue(0)->maxValue(9999)->required(),
                         Section::make('Status connection')->schema([
                             TextInput::make('target_host')->label('Minecraft status host')->required()->maxLength(253),

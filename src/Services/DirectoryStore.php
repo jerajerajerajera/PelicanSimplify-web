@@ -96,9 +96,13 @@ final class DirectoryStore
             if (!$meta[$field] && is_string($inventory[$field] ?? null)) { $meta[$field]=$inventory[$field]; }
         }
         $meta['visible'] = $meta['visible'] === true;
-        $meta['requested_subdomain'] = $ssc['requested_subdomain'] ?? '';
+        // PelicanSimplify's automatic subdomains: a connected subdomain is the join address unless one is set here.
+        $simplify = class_exists(\Simplify\Panel\Services\Subdomains::class) && \Simplify\Panel\Services\Subdomains::active();
+        $subdomain = $simplify ? \Simplify\Panel\Services\Subdomains::state($server) : null;
+        $meta['requested_subdomain'] = $subdomain ? ($subdomain['name'] !== '' ? $subdomain['name'] . '.' . $subdomain['domain'] . ' · ' . ($subdomain['status'] === 'active' ? 'connected' : ($subdomain['message'] ?: $subdomain['status'])) : '') : ($ssc['requested_subdomain'] ?? '');
+        $meta['subdomain_address'] = $simplify ? (string) (\Simplify\Panel\Services\Subdomains::address($server) ?? '') : '';
         $meta['source'] = $stored === null ? 'SSC / default' : 'Directory';
-        $meta['effective_address'] = $meta['published_address'] ?: (config('server-directory.mode', 'test') === 'test' ? $join : '');
+        $meta['effective_address'] = $meta['published_address'] ?: ($meta['subdomain_address'] ?: (config('server-directory.mode', 'test') === 'test' ? $join : ''));
         return $meta;
     }
 
