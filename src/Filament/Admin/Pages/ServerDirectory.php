@@ -87,7 +87,7 @@ final class ServerDirectory extends Page implements HasTable, HasForms
                         TextInput::make('bedrock_address')->label('Bedrock join address (optional)')->maxLength(255)
                             ->helperText('Only for servers that accept Bedrock players. Format: host:19132. Adds an Open in Minecraft button. Java modpacks use the client download and join instructions instead.'),
                         TextInput::make('published_address')->label('Join address')->maxLength(255)
-                            ->helperText('Shown and copied on the website. Empty uses the connected subdomain; test mode can also fall back to the allocation.'),
+                            ->helperText('Shown and copied on the website. Empty uses the connected subdomain, then the game address with this server\'s port. Private and Tailscale addresses are never shown to visitors.'),
                         TextInput::make('requested_subdomain')->label('Subdomain')->disabled()->dehydrated(false)
                             ->helperText(fn (Server $record) => DirectoryStore::metadata($record)['subdomain_address'] !== ''
                                 ? 'Connected by PelicanSimplify. Used as the join address while the field above is empty.'

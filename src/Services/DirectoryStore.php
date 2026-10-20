@@ -102,8 +102,30 @@ final class DirectoryStore
         $meta['requested_subdomain'] = $subdomain ? ($subdomain['name'] !== '' ? $subdomain['name'] . '.' . $subdomain['domain'] . ' · ' . ($subdomain['status'] === 'active' ? 'connected' : ($subdomain['message'] ?: $subdomain['status'])) : '') : ($ssc['requested_subdomain'] ?? '');
         $meta['subdomain_address'] = $simplify ? (string) (\Simplify\Panel\Services\Subdomains::address($server) ?? '') : '';
         $meta['source'] = $stored === null ? 'SSC / default' : 'Directory';
-        $meta['effective_address'] = $meta['published_address'] ?: ($meta['subdomain_address'] ?: (config('server-directory.mode', 'test') === 'test' ? $join : ''));
+        // Simplify's game address (e.g. play.example.com) when this port is forwarded there.
+        $game = '';
+        if (class_exists(\Simplify\Panel\Services\Subdomains::class)) {
+            $target = (string) (\Simplify\Panel\Services\Subdomains::settings()['target'] ?? '');
+            if ($target !== '' && \Simplify\Panel\Services\Subdomains::forwarded($port)) { $game = $target . ':' . $port; }
+        }
+        // Visitors only ever get a public address: private, Tailscale and loopback addresses are skipped.
+        $candidates = [$meta['published_address'], $meta['subdomain_address'], $game, config('server-directory.mode', 'test') === 'test' ? $join : ''];
+        $meta['effective_address'] = '';
+        foreach ($candidates as $candidate) { if ($candidate !== '' && self::publicAddress($candidate)) { $meta['effective_address'] = $candidate; break; } }
         return $meta;
+    }
+
+    /** False for addresses players outside the network cannot reach: private, CGNAT/Tailscale, loopback, .ts.net, .local. */
+    public static function publicAddress(string $address): bool
+    {
+        $host = preg_match('/^\[([^\]]+)\]/', $address, $m) ? $m[1] : (substr_count($address, ':') > 1 ? $address : explode(':', $address)[0]);
+        $host = strtolower(trim($host));
+        if ($host === '' || $host === 'localhost' || str_ends_with($host, '.ts.net') || str_ends_with($host, '.local')) { return false; }
+        if (!filter_var($host, FILTER_VALIDATE_IP)) { return true; }
+        if (!filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) { return false; }
+        // 100.64.0.0/10 (carrier-grade NAT, used by Tailscale) is not covered by the flags above.
+        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) { $n = ip2long($host); return !($n >= ip2long('100.64.0.0') && $n <= ip2long('100.127.255.255')); }
+        return !str_starts_with($host, 'fd7a:115c:a1e0');
     }
 
     public static function save(Server $server, array $input): void
