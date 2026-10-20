@@ -2,7 +2,7 @@
   "id": "server-directory",
   "name": "PelicanSimplifyWeb",
   "author": "Deckzwabbers",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Manage the server showcase: visibility, screenshots, modpacks, exact client releases and join addresses.",
   "category": "plugin",
   "namespace": "Deckzwabbers\\ServerDirectory",
@@ -12,6 +12,7 @@
   ],
   "panel_version": "^1.0.0-beta38",
   "api_version": 1,
+  "update_url": "https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify-web/main/update.json",
   "meta": {
     "status": "enabled",
     "status_message": null
