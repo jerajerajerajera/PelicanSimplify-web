@@ -128,6 +128,16 @@ final class DirectoryStore
         return !str_starts_with($host, 'fd7a:115c:a1e0');
     }
 
+    /** Marks a just-created server as shown on the website; an existing listing is left alone. */
+    public static function listNew(Server $server): void
+    {
+        $disk = Storage::disk('local');
+        if ($disk->exists(self::path($server))) { return; }
+        if (!$disk->put(self::path($server), json_encode(['schema_version' => 2, 'server_uuid' => $server->uuid, 'visible' => true], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) {
+            throw new \RuntimeException('Could not save the website listing.');
+        }
+    }
+
     public static function save(Server $server, array $input): void
     {
         // Website settings never rename a server or keep an independent public title.
