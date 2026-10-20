@@ -26,7 +26,10 @@ final class DirectoryStore
         $ssc = self::read('ssc/website-visibility/' . $server->uuid . '.json') ?? [];
         $stored = self::read(self::path($server));
         $ip = (string) ($server->allocation?->ip ?? '');
-        if (in_array($ip, ['0.0.0.0', '::', ''], true)) {
+        // A wildcard allocation listens on every address of the node. The website's status service runs on the
+        // panel host, so it pings over loopback: the node's FQDN can be an HTTP-only proxy such as a Cloudflare Tunnel.
+        $wildcard = in_array($ip, ['0.0.0.0', '::', ''], true);
+        if ($wildcard) {
             $fqdn = (string) ($server->node?->fqdn ?? '');
             $ip = str_contains($fqdn, '://') ? (string) parse_url($fqdn, PHP_URL_HOST) : $fqdn;
         }
@@ -59,11 +62,13 @@ final class DirectoryStore
             'motd' => '',
             'bedrock_address' => '',
             'published_address' => '',
-            'target_host' => $ip,
+            'target_host' => $wildcard ? '127.0.0.1' : $ip,
             'target_port' => $port,
             'sort_order' => 0,
         ];
         $meta = array_replace($defaults, array_intersect_key($stored ?? [], $defaults));
+        // Listings saved before loopback status checks stored the node's FQDN; follow the new default.
+        if ($wildcard && $ip !== '' && strcasecmp((string) $meta['target_host'], $ip) === 0) { $meta['target_host'] = '127.0.0.1'; }
         // The native server name is authoritative, including older website overrides.
         $meta['display_name']=$server->name;
         $meta['server_alias']=$defaults['server_alias'];
