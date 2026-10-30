@@ -101,20 +101,13 @@ final class DirectoryStore
             if (!$meta[$field] && is_string($inventory[$field] ?? null)) { $meta[$field]=$inventory[$field]; }
         }
         $meta['visible'] = $meta['visible'] === true;
-        // PelicanSimplify's automatic subdomains: a connected subdomain is the join address unless one is set here.
-        $simplify = class_exists(\Simplify\Panel\Services\Subdomains::class) && \Simplify\Panel\Services\Subdomains::active();
-        $subdomain = $simplify ? \Simplify\Panel\Services\Subdomains::state($server) : null;
-        $meta['requested_subdomain'] = $subdomain ? ($subdomain['name'] !== '' ? $subdomain['name'] . '.' . $subdomain['domain'] . ' · ' . ($subdomain['status'] === 'active' ? 'connected' : ($subdomain['message'] ?: $subdomain['status'])) : '') : ($ssc['requested_subdomain'] ?? '');
-        $meta['subdomain_address'] = $simplify ? (string) (\Simplify\Panel\Services\Subdomains::address($server) ?? '') : '';
+        // Simplify's automatic subdomains: a connected subdomain is the join address unless one is set here.
+        $label = SimplifySubdomain::label($server);
+        $meta['requested_subdomain'] = $label !== '' ? $label : (string) ($ssc['requested_subdomain'] ?? '');
+        $meta['subdomain_address'] = SimplifySubdomain::address($server);
         $meta['source'] = $stored === null ? 'SSC / default' : 'Directory';
-        // Simplify's game address (e.g. play.example.com) when this port is forwarded there.
-        $game = '';
-        if (class_exists(\Simplify\Panel\Services\Subdomains::class)) {
-            $target = (string) (\Simplify\Panel\Services\Subdomains::settings()['target'] ?? '');
-            if ($target !== '' && \Simplify\Panel\Services\Subdomains::forwarded($port)) { $game = $target . ':' . $port; }
-        }
         // Visitors only ever get a public address: private, Tailscale and loopback addresses are skipped.
-        $candidates = [$meta['published_address'], $meta['subdomain_address'], $game, config('server-directory.mode', 'test') === 'test' ? $join : ''];
+        $candidates = [$meta['published_address'], $meta['subdomain_address'], SimplifySubdomain::gameAddress($server), config('server-directory.mode', 'test') === 'test' ? $join : ''];
         $meta['effective_address'] = '';
         foreach ($candidates as $candidate) { if ($candidate !== '' && self::publicAddress($candidate)) { $meta['effective_address'] = $candidate; break; } }
         return $meta;
