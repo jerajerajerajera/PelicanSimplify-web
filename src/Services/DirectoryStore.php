@@ -100,12 +100,13 @@ final class DirectoryStore
         foreach (['modpack_name','modpack_version','modpack_description','version'] as $field) {
             if (!$meta[$field] && is_string($inventory[$field] ?? null)) { $meta[$field]=$inventory[$field]; }
         }
-        $meta['visible'] = $meta['visible'] === true;
+        $simplify = SimplifyWebsite::active();
+        $meta['visible'] = $simplify ? SimplifyWebsite::visible($server) : $meta['visible'] === true;
         // Simplify's automatic subdomains: a connected subdomain is the join address unless one is set here.
         $label = SimplifySubdomain::label($server);
         $meta['requested_subdomain'] = $label !== '' ? $label : (string) ($ssc['requested_subdomain'] ?? '');
         $meta['subdomain_address'] = SimplifySubdomain::address($server);
-        $meta['source'] = $stored === null ? 'SSC / default' : 'Directory';
+        $meta['source'] = $stored === null ? ($simplify ? 'Simplify' : 'SSC / default') : 'Directory';
         // Visitors only ever get a public address: private, Tailscale and loopback addresses are skipped.
         $candidates = [$meta['published_address'], $meta['subdomain_address'], SimplifySubdomain::gameAddress($server), config('server-directory.mode', 'test') === 'test' ? $join : ''];
         $meta['effective_address'] = '';
@@ -129,6 +130,8 @@ final class DirectoryStore
     /** Marks a just-created server as shown on the website; an existing listing is left alone. */
     public static function listNew(Server $server): void
     {
+        // Simplify decides whether a new server is on the website.
+        if (SimplifyWebsite::active()) { return; }
         $disk = Storage::disk('local');
         if ($disk->exists(self::path($server))) { return; }
         if (!$disk->put(self::path($server), json_encode(['schema_version' => 2, 'server_uuid' => $server->uuid, 'visible' => true], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) {
@@ -166,6 +169,7 @@ final class DirectoryStore
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
         ])->validate();
         $values['visible'] = (bool) $values['visible'];
+        if (SimplifyWebsite::active()) { SimplifyWebsite::setVisible($server, $values['visible']); }
         Cache::lock('directory.save.' . $server->uuid, 10)->block(5, function () use ($server, $values): void {
             if (!Storage::disk('local')->put(self::path($server), json_encode([
                 'schema_version' => 2, 'server_uuid' => $server->uuid, ...$values,

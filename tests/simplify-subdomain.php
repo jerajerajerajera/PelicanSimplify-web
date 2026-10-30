@@ -19,7 +19,7 @@ namespace Simplify\Core\Subdomains {
 }
 namespace {
     function config(string $key, $default = null) { return $default; }
-    require __DIR__.'/../src/Services/SimplifySubdomain.php';
+    foreach (glob(__DIR__.'/../src/Services/Simplify*.php') as $file) { require $file; }
     require __DIR__.'/../src/Services/DirectoryStore.php';
     use App\Models\Server;
     use Deckzwabbers\ServerDirectory\Services\DirectoryStore as D;
