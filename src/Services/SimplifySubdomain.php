@@ -14,6 +14,12 @@ final class SimplifySubdomain
         return self::ask(fn () => (string) (Subdomains::address($server) ?? ''));
     }
 
+    /** The subdomain, else the game address with this server's port (such as play.example.com:25570). Needs Simplify 1.5.2+. */
+    public static function gameAddress(Server $server): string
+    {
+        return method_exists(Subdomains::class, 'gameAddress') ? self::ask(fn () => (string) (Subdomains::gameAddress($server) ?? '')) : '';
+    }
+
     /** What the admin page shows, such as "oak.example.com · connected". */
     public static function label(Server $server): string
     {

@@ -13,6 +13,7 @@ namespace Simplify\Core\Subdomains {
         public static function ready(): bool { return self::$ready; }
         public static function domain(): string { return 'example.com'; }
         public static function address(\App\Models\Server $s): ?string { return $s->uuid === 'oak' ? 'oak.example.com' : null; }
+        public static function gameAddress(\App\Models\Server $s): ?string { return self::address($s) ?? 'play.example.com:'.$s->allocation->port; }
         public static function state(\App\Models\Server $s): array { return $s->uuid === 'oak' ? ['name' => 'oak', 'status' => 'active', 'message' => ''] : ['name' => '', 'status' => '', 'message' => '']; }
     }
 }
@@ -32,7 +33,7 @@ namespace {
     $oak = D::metadata(server('oak'));
     check($oak['effective_address'] === 'oak.example.com' && $oak['subdomain_address'] === 'oak.example.com', 'a working Simplify subdomain is the join address');
     check($oak['requested_subdomain'] === 'oak.example.com · connected', 'the admin page shows the connected subdomain');
-    check(D::metadata(server('elm'))['effective_address'] === '159.195.130.60:25570', 'without a subdomain the allocation is used');
+    check(D::metadata(server('elm'))['effective_address'] === 'play.example.com:25570', 'without a subdomain the game address is used');
     Subdomains::$ready = false;
     check(D::metadata(server('oak'))['effective_address'] === '159.195.130.60:25570', 'subdomains that are not set up are ignored');
     echo "All Simplify subdomain checks passed.\n";

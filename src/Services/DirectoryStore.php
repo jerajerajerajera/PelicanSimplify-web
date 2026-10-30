@@ -107,7 +107,7 @@ final class DirectoryStore
         $meta['subdomain_address'] = SimplifySubdomain::address($server);
         $meta['source'] = $stored === null ? 'SSC / default' : 'Directory';
         // Visitors only ever get a public address: private, Tailscale and loopback addresses are skipped.
-        $candidates = [$meta['published_address'], $meta['subdomain_address'], config('server-directory.mode', 'test') === 'test' ? $join : ''];
+        $candidates = [$meta['published_address'], $meta['subdomain_address'], SimplifySubdomain::gameAddress($server), config('server-directory.mode', 'test') === 'test' ? $join : ''];
         $meta['effective_address'] = '';
         foreach ($candidates as $candidate) { if ($candidate !== '' && self::publicAddress($candidate)) { $meta['effective_address'] = $candidate; break; } }
         return $meta;
