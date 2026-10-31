@@ -1,7 +1,7 @@
-# PelicanSimplifyWeb (server-directory)
+# Deckzwabbers Website (server-directory)
 
 Pelican plugin for the Deckzwabbers server showcase: visibility, screenshots, modpacks, client releases and join addresses.
-Works together with [PelicanSimplify](https://github.com/jerajerajerajera/PelicanSimplify).
+Works with [Simplify](https://github.com/jerajerajerajera/simplify) when it is installed.
 
 ## Updates
 

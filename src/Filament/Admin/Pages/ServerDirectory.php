@@ -61,7 +61,7 @@ final class ServerDirectory extends Page implements HasTable, HasForms
                     ->fillForm(fn (Server $record) => DirectoryStore::metadata($record))
                     ->schema([
                         Toggle::make('visible')->label('Show on website'),
-                        TextInput::make('display_name')->label('Server name')->disabled()->dehydrated(false)->helperText('Uses the server name. Rename the server in Game settings or the native server settings.'),
+                        TextInput::make('display_name')->label('Server name')->disabled()->dehydrated(false)->helperText('Uses the server name. Rename the server in its Settings.'),
                         Textarea::make('description')->label('Description')->maxLength(1200)->rows(3),
                         Select::make('game')->label('Game')->options(['minecraft' => 'Minecraft', 'other' => 'Other game'])->required(),
                         TextInput::make('type')->label('Type / game name')->required()->maxLength(100),
@@ -83,15 +83,15 @@ final class ServerDirectory extends Page implements HasTable, HasForms
                             TextInput::make('modpack_url')->label('Modpack website')->url()->maxLength(2048),
                             TextInput::make('client_url')->label('Client version download')->url()->maxLength(2048)
                                 ->helperText('Link to the exact client release installed on this server, not the server pack. Works with Modrinth, CurseForge, FTB, Technic and other providers.'),
-                        ])->description('Optional overrides. Modrinth and FTB packs are detected from the installed SSC egg variables. Name, icon, description and installed release are retrieved automatically where available. Other providers can be filled in here.'),
+                        ])->description('Optional overrides. Modrinth and FTB packs are detected from the installed egg variables. Name, icon, description and installed release are retrieved automatically where available. Other providers can be filled in here.'),
                         TextInput::make('bedrock_address')->label('Bedrock join address (optional)')->maxLength(255)
                             ->helperText('Only for servers that accept Bedrock players. Format: host:19132. Adds an Open in Minecraft button. Java modpacks use the client download and join instructions instead.'),
                         TextInput::make('published_address')->label('Join address')->maxLength(255)
                             ->helperText('Shown and copied on the website. Empty uses the connected subdomain, then the game address with this server\'s port. Private and Tailscale addresses are never shown to visitors.'),
                         TextInput::make('requested_subdomain')->label('Subdomain')->disabled()->dehydrated(false)
                             ->helperText(fn (Server $record) => DirectoryStore::metadata($record)['subdomain_address'] !== ''
-                                ? 'Connected by PelicanSimplify. Used as the join address while the field above is empty.'
-                                : 'Set by the server owner in PelicanSimplify (Network). Automatic subdomains connect it in Cloudflare.'),
+                                ? 'Connected by Simplify. Used as the join address while the field above is empty.'
+                                : 'Set by the server owner in Simplify (Subdomain in the server menu). Simplify connects it in Cloudflare.'),
                         TextInput::make('sort_order')->label('Display order')->integer()->minValue(0)->maxValue(9999)->required(),
                         Section::make('Status connection')->schema([
                             TextInput::make('target_host')->label('Minecraft status host')->required()->maxLength(253),
