@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Servers made with PelicanSimplify 0.7.0 show their category, modpack and alias on the website.
+
 ## 0.5.8
 
 - The website shows the server's working Simplify subdomain again (Simplify 1.5 and later).

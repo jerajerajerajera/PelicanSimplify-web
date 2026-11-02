@@ -23,7 +23,8 @@ final class DirectoryStore
 
     public static function metadata(Server $server): array
     {
-        $ssc = self::read('ssc/website-visibility/' . $server->uuid . '.json') ?? [];
+        // PelicanSimplify 0.7.0 saved to simplify/server-metadata; older versions to ssc/website-visibility.
+        $ssc = self::read('simplify/server-metadata/' . $server->uuid . '.json') ?? self::read('ssc/website-visibility/' . $server->uuid . '.json') ?? [];
         $stored = self::read(self::path($server));
         $ip = (string) ($server->allocation?->ip ?? '');
         // A wildcard allocation listens on every address of the node. The website's status service runs on the
