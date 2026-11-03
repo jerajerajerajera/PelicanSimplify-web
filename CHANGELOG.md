@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The website shows Simplify's game address (play.<domain>:port) also while Cloudflare is not set up, instead of IP:port.
 - Servers made with PelicanSimplify 0.7.0 show their category, modpack and alias on the website.
 
 ## 0.5.8
