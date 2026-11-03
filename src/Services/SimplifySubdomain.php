@@ -17,7 +17,8 @@ final class SimplifySubdomain
     /** The subdomain, else the game address with this server's port (such as play.example.com:25570). Needs Simplify 1.5.2+. */
     public static function gameAddress(Server $server): string
     {
-        return method_exists(Subdomains::class, 'gameAddress') ? self::ask(fn () => (string) (Subdomains::gameAddress($server) ?? '')) : '';
+        // The game address only needs Simplify's target and port range, not a Cloudflare token.
+        return method_exists(Subdomains::class, 'gameAddress') ? self::ask(fn () => (string) (Subdomains::gameAddress($server) ?? ''), false) : '';
     }
 
     /** What the admin page shows, such as "oak.example.com · connected". */
@@ -30,9 +31,9 @@ final class SimplifySubdomain
         });
     }
 
-    private static function ask(callable $read): string
+    private static function ask(callable $read, bool $ready = true): string
     {
         if (!class_exists(Subdomains::class)) { return ''; }
-        try { return Subdomains::ready() ? $read() : ''; } catch (Throwable $e) { report($e); return ''; }
+        try { return !$ready || Subdomains::ready() ? $read() : ''; } catch (Throwable $e) { report($e); return ''; }
     }
 }
